@@ -159,6 +159,15 @@ img {
 a {
 	color: #fe4c50;
 }
+
+a:hover{
+  text-decoration: underline;
+  color: #405388;
+}
+.section{
+  padding-top: 5rem;
+  padding-bottom: 5rem;
+}
 .content {
  padding-bottom: 0;
  padding-top: 2rem;
@@ -254,6 +263,16 @@ a {
 	}
 }
 
+.relative {
+  position: relative;
+  height: 100%;
+}
+.user-image {
+  display: block;
+}
+.special {
+  list-style-position: outside;
+}
 /*****************
 2.2 Article Title
 *****************/
@@ -687,6 +706,13 @@ a {
 .contact-form > .form-group label {
 	display: none !important;
 }
+.social-icons {
+  font-size: 2rem;
+}
+.social-icons a:hover{
+  color: #ffffff;
+}
+
 .form-group {
     display: flex;
     flex: 0 0 auto;

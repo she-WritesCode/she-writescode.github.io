@@ -1,99 +1,70 @@
+//update this with your js_form selector
+var form_id_js = "javascript_form";
 
-var isMessagesInLocalStorage = (localStorage.getItem('messages') == null)
+var data_js = {
+	access_token: "uu2y7asfq3t45n2m9olw44xj",
+};
 
-const contactForm = document.getElementById('contactForm')
-const submitButton = document.querySelector('[type="submit"]')
-
-function validateFormEntry() {
-	var name = document.getElementById('name').value
-	var email = document.getElementById('email').value
-	var messageText = document.getElementById('message').value
-	
-	var isValid;
-	if ((name === "") && (email === "") && (messageText === "")) {
-		isValid = false
-		alert("You must fill the form first, You don\'t wanna send me an empty message do you?")
-	} 
-	if (isValid) { saveMessage() } else { console.log('complete the form') }
+function js_onSuccess() {
+	// remove this to avoid redirect
+	// window.location = window.location.pathname + "?message=Email+Successfully+Sent%21&isError=0";
+	toastr.success("Email Successfully Sent");
+	document.querySelector("#" + form_id_js + " [name='email']").value = "";
+	document.querySelector("#" + form_id_js + " [name='subject']").value = "";
+	document.querySelector("#" + form_id_js + " [name='text']").value = "";
+	sendButton.value = "Send";
+	sendButton.disabled = false;
 }
 
-function saveMessage(e) {
-	
-	var now = new Date()
-	var name = document.getElementById('name').value
-	var email = document.getElementById('email').value
-	var messageText = document.getElementById('message').value
-	var id = `msg${now.toISOString()}`
-	
-	var message = {
-		id: id,
-		name: name,
-		email: email,
-		messageText: messageText
+function js_onError(error) {
+	// remove this to avoid redirect
+	// window.location = window.location.pathname + "?message=Email+could+not+be+sent.&isError=1";
+	toastr.error("Email could not be sent");
+	sendButton.value = "Send";
+	sendButton.disabled = false;
+}
+
+var sendButton = document.getElementById("js_send");
+
+function js_send() {
+	sendButton.value = "Sending…";
+	sendButton.disabled = true;
+	var request = new XMLHttpRequest();
+	request.onreadystatechange = function () {
+		if (request.readyState == 4 && request.status == 200) {
+			js_onSuccess();
+		} else if (request.readyState == 4) {
+			js_onError(request.response);
+		}
+	};
+
+	var email = document.querySelector("#" + form_id_js + " [name='email']").value;
+	var subject = document.querySelector("#" + form_id_js + " [name='subject']").value;
+	var message = document.querySelector("#" + form_id_js + " [name='text']").value;
+	data_js["subject"] = subject ? subject + " from " + email + " on she-writescode.github.io" : subject;
+	data_js["text"] = message ? message + " \n from " + email + " on she-writescode.github.io" : message;
+	var params = toParams(data_js);
+
+	request.open("POST", "https://postmail.invotes.com/send", true);
+	request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+	request.send(params);
+
+	return false;
+}
+
+sendButton.onclick = js_send;
+
+function toParams(data_js) {
+	var form_data = [];
+	for (var key in data_js) {
+		form_data.push(encodeURIComponent(key) + "=" + encodeURIComponent(data_js[key]));
 	}
 
-	if (isMessagesInLocalStorage) {
-		var messages = []
-		messages.push(message)
-		localStorage.setItem('messages', JSON.stringify(messages))
-	} else {
-		var messages = JSON.parse(localStorage.getItem('messages'))
-		messages.push(message)
-		localStorage.setItem('messages', JSON.stringify(messages))
-	}
-	
-	alert("Thank You For Contacting me I\'ll get back to you soon")
-	contactForm.reset()
-
-	fetchMessage()
-	e.preventDefault()
-	
+	return form_data.join("&");
 }
 
-function fetchMessage() {
-	const messages = JSON.parse(localStorage.getItem('messages'))
-	var messageList = document.getElementById('contactFormEntry')
-	messageList.innerHTML = ""
-
-	for (var i = messages.length - 1; i >= 0; i--) {
-		var id = messages[i].id
-		var name = messages[i].name
-		var email = messages[i].email
-		var messageText = messages[i].messageText
-
-		messageList.innerHTML += `<tr>
-									<td>${name}</td>
-									<td><a href="mailto:${email}">${email}</a></td>
-									<td>${messageText}</td>
-									<td>
-										<button class="btn" type="submit" onclick="deleteMessage('${id}', '${email}')">Delete</button>
-									</td>
-								</tr>`
-	}
-}
-
-function deleteMessage(id, email) {
-	var messages = JSON.parse(localStorage.getItem('messages'))
-	for (var i = messages.length - 1; i >= 0; i--) {
-	    if(id === messages[i].id && email === messages[i].email) {
-	    	x = messages.pop(i)
-	    }
-	}
-	localStorage.setItem('messages', JSON.stringify(messages))
-	console.log('Message Deleted', x)
-	
-	fetchMessage()
-}
-
-
-function formReset() {
-	document.getElementById('name').value = ""
-	document.getElementById('email').value = ""
-	document.getElementById('message').value = ""
-}
-
-contactForm.addEventListener('submit', validateFormEntry)
-if (!isMessagesInLocalStorage) {
-	window.addEventListener('load', fetchMessage)
-}
-
+var js_form = document.getElementById(form_id_js);
+js_form.addEventListener("submit", function (e) {
+	e.preventDefault();
+});
